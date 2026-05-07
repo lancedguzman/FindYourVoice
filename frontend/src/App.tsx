@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { VoiceProvider } from '@humeai/voice-react';
+import ActiveSession from './ActiveSession';
 
 function App() {
   // State for our backend connection test (optional, keeping it for your debug peace of mind)
@@ -79,26 +81,18 @@ function App() {
 
         ) : (
           /* --- ACTIVE SESSION UI (Placeholder) --- */
-          <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-8 animate-pulse">
-              {/* This is where our Hume Voice visualizer will go */}
-              <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </div>
-            
-            <h2 className="text-xl font-semibold mb-2">Session Active</h2>
-            <p className="text-slate-500 text-center max-w-md">
-              Context loaded: <span className="italic text-slate-700">"{studyContext}"</span>
-            </p>
-            
-            <button 
-              onClick={() => setIsSessionActive(false)}
-              className="mt-8 text-sm text-red-500 hover:text-red-700 font-medium"
-            >
-              End Session
-            </button>
-          </div>
+          <VoiceProvider 
+            auth={{ accessToken: tokenData?.token || 'fallback_dummy_token' }}
+            // We pass the context directly as a system prompt addition
+            sessionSettings={{
+              systemPrompt: `You are a study tutor. The user is preparing for: ${studyContext}`
+            }}
+          >
+            <ActiveSession 
+              studyContext={studyContext} 
+              onEndSession={() => setIsSessionActive(false)} 
+            />
+          </VoiceProvider>
         )}
 
       </main>
