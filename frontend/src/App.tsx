@@ -1,122 +1,109 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // State for our backend connection test (optional, keeping it for your debug peace of mind)
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  
+  // State for the product flow
+  const [studyContext, setStudyContext] = useState('');
+  const [isSessionActive, setIsSessionActive] = useState(false);
+
+  // Check Django connection on mount
+  useEffect(() => {
+    fetch('/api/get-voice-token/')
+      .then((res) => res.ok ? setBackendStatus('connected') : setBackendStatus('error'))
+      .catch(() => setBackendStatus('error'));
+  }, []);
+
+  const handleStartSession = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studyContext.trim()) return;
+    
+    // In the next phase, this is where we will initialize the Hume WebSocket 
+    // and pass the `studyContext` into the AI's system prompt.
+    setIsSessionActive(true);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center p-6 font-sans text-slate-900">
+      
+      {/* Header */}
+      <header className="w-full max-w-2xl mb-12 mt-8 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
+          Finding Your Voice
+        </h1>
+        <p className="text-lg text-slate-600">
+          Your private space to rehearse for tomorrow's class discussion. 
+          Let's figure it out together.
+        </p>
+      </header>
 
-      <div className="ticks"></div>
+      {/* Main Content Area */}
+      <main className="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        {!isSessionActive ? (
+          /* --- ONBOARDING FLOW --- */
+          <div className="p-8">
+            <form onSubmit={handleStartSession} className="space-y-6">
+              <div>
+                <label htmlFor="context" className="block text-sm font-semibold text-slate-700 mb-2">
+                  What are we preparing for?
+                </label>
+                <textarea
+                  id="context"
+                  rows={4}
+                  className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all text-base"
+                  placeholder="e.g., English tomorrow, chapter 7 of The Outsiders, my teacher usually asks about themes..."
+                  value={studyContext}
+                  onChange={(e) => setStudyContext(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+              <button
+                type="submit"
+                disabled={!studyContext.trim()}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
+              >
+                Start Practice Session
+              </button>
+            </form>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            {/* Subtle backend status indicator */}
+            <div className="mt-6 text-center text-xs text-slate-400">
+              {backendStatus === 'checking' && 'Connecting to services...'}
+              {backendStatus === 'connected' && '🟢 Services online'}
+              {backendStatus === 'error' && '🔴 Error connecting to backend'}
+            </div>
+          </div>
+
+        ) : (
+          /* --- ACTIVE SESSION UI (Placeholder) --- */
+          <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-8 animate-pulse">
+              {/* This is where our Hume Voice visualizer will go */}
+              <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            
+            <h2 className="text-xl font-semibold mb-2">Session Active</h2>
+            <p className="text-slate-500 text-center max-w-md">
+              Context loaded: <span className="italic text-slate-700">"{studyContext}"</span>
+            </p>
+            
+            <button 
+              onClick={() => setIsSessionActive(false)}
+              className="mt-8 text-sm text-red-500 hover:text-red-700 font-medium"
+            >
+              End Session
+            </button>
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
