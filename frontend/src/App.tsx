@@ -79,7 +79,7 @@ function App() {
         {appState === 'active' && (
           <VoiceProvider 
             auth={{ accessToken: tokenData?.token || '' }}
-            configId="YOUR_HUME_CONFIG_ID_HERE" 
+            configId={import.meta.env.VITE_HUME_CONFIG_ID} 
             sessionSettings={{
               systemPrompt: `The user is preparing for: ${studyContext}`
             }}

@@ -10,11 +10,14 @@ export default function ActiveSession({ studyContext, onEndSession }: ActiveSess
   const { connect, disconnect, status, isPlaying, messages } = useVoice();
   const [taxonomyData, setTaxonomyData] = useState<string[]>([]);
 
-  // Automatically connect on mount
+  // Automatically connect exactly ONCE on mount
   useEffect(() => {
     connect().catch((err) => console.error("Failed to connect:", err));
-    return () => disconnect();
-  }, [connect, disconnect]);
+    
+    return () => {
+      disconnect();
+    };
+  }, []);
 
   // Listen to the Hume messages array for our specific tool call
   useEffect(() => {

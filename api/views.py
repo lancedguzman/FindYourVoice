@@ -12,12 +12,10 @@ def get_voice_token(request):
     if not api_key or not secret_key:
         return Response({"error": "API key and secret key must be set in environment variables."}, status=500)
     
-    url = "https://api.hume.ai/v0/auth/token"
+    url = "https://api.hume.ai/oauth2-cc/token"
 
     # Hume requires x-www-form-urlencoded format for this endpoint
     payload = {
-        "client_id": api_key,
-        "client_secret": secret_key,
         "grant_type": "client_credentials"
     }
     
@@ -26,8 +24,14 @@ def get_voice_token(request):
     }
 
     try:
-        response = requests.post(url, data=payload, headers=headers)
-        response.raise_for_status()  # Catch any 4xx or 5xx errors
+        # Hume requires HTTP Basic Auth for this request
+        response = requests.post(
+            url, 
+            data=payload, 
+            headers=headers, 
+            auth=(api_key, secret_key) # API key = username, Secret key = password
+        )
+        response.raise_for_status() 
         token_data = response.json()
         
         return Response({
