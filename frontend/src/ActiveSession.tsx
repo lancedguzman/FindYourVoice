@@ -51,7 +51,7 @@ export default function ActiveSession({ studyContext, onEndSession }: ActiveSess
   }, []); // <-- Empty array ensures this ONLY runs on unmount
 
   const handleStartAudio = () => {
-    connect({})
+    connect({ audioConstraints: { audio: true } })
       .then(() => console.log("Microphone connected successfully!"))
       .catch((err) => console.error("Failed to connect:", err));
   }
